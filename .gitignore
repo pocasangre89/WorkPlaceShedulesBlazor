@@ -1,0 +1,31 @@
+# .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.swp
+/.vs/
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# Archivos de compilación generados por .NET Core
+*.dll
+*.exe
+*.pdb
+*.dll.config
+*.exe.config
+
+# Archivos de registro y archivos de datos
+*.log
+*.sqlite
+
+# Dependencias de NuGet
+## Opcionalmente, puedes incluir solo /bin/ y /obj/ y omitir las dependencias nuget
+/packages/
+
+# Archivos de generación de documentación
+*.xml

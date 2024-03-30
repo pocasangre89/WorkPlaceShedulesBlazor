@@ -1,0 +1,69 @@
+﻿@page "/"
+@layout LoginLayout
+
+
+<link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+
+@inject HttpClient httpClient
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider autenticacionProvider
+@inject NavigationManager navManager
+
+@using WorkPlaceShedulesBlazor.Service
+@using WorkPlaceShedulesBlazor.Storage
+<div class="row mt-5">
+
+    <div class="col-lg-4 offset-lg-4 border">
+        <h3>Iniciar Sesión</h3>
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <InputText id="username" @bind-Value="loginModel.Username" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <InputText id="password" @bind-Value="loginModel.Password" class="form-control" type="password" />
+            </div>
+            <p>@errorMessage</p>
+
+            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+        </EditForm>
+
+    </div>
+
+</div
+<PantallaEspera @ref="loadingComponent" />
+
+@code {
+    private LoginDTO loginModel = new LoginDTO();
+    private string errorMessage;
+        private PantallaEspera loadingComponent;
+
+    [Inject]
+    private AuthService authService { get; set; }
+
+    [Inject]
+    private NavigationManager Navigation { get; set; }
+
+
+    private async Task HandleSubmit()
+    {
+        loadingComponent._showLoading = true;
+        var tokenSession = await authService.LoginAsync(loginModel.Username, loginModel.Password);
+        if (!string.IsNullOrEmpty(tokenSession.result))
+        {
+            var tokenData = (AutenticationExtension)autenticacionProvider;
+            await tokenData.ActualizarEstadoAutenticacion(tokenSession);
+            Navigation.NavigateTo("/Home");
+        }
+        else
+        
+        loadingComponent._showLoading = false;
+            errorMessage = "Credenciales inválidas. Por favor, inténtalo de nuevo.";
+        }
+    }
+}

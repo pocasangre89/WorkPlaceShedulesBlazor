@@ -1,0 +1,88 @@
+﻿@page "/WorkGroups"
+
+@inject SweetAlertService Swal;
+@inject IWorkGroupsService workGroupsService;
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@attribute [Authorize(Roles = "Administrador")]
+
+
+<h3>Listado de Grupos de Trabajo</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="/AddWorkGroups">Nuevo Grupo</a>
+<p>@errorMessage</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre del Grupo de Trabajo</th>
+            <th>Descripci&oacute;n del Grupo de Trabajo</th>
+            <th>Opciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (listadoworkGroups == null)
+        {
+            <tr>
+                <td colspan="4">NO hay datos para mostrar</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in listadoworkGroups)
+            {
+                <tr>
+                    <td>@item.GroupName</td>
+                    <td>@item.GroupDescription</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="/EditWorkGroups/@item.GroupId">
+                            <i class="ti ti-pencil">Editar</i>
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        <button class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.GroupId))">
+                            <i class="ti ti-trash">Eliminar</i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    List<WorkGroupsDTO>? listadoworkGroups = null;
+    private string errorMessage;
+
+    [Inject]
+    private NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        listadoworkGroups = await workGroupsService.GetWorkGroups();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Grupo de Trabajo",
+                Text = "¿Deseas eliminar el Grupo de Trabajo?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            var delete = await workGroupsService.DeleteWorkGroups(id);
+            if (!delete)
+            {
+                errorMessage = "Error al Eliminar el grupo de Trabajo";
+            }
+            else
+            {
+                Navigation.NavigateTo("/WorkGroups", true);
+            }
+        }
+    }
+}

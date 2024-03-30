@@ -1,0 +1,74 @@
+﻿@page "/EditWorkGroups/{GroupId:int}"
+
+@inject SweetAlertService Swal;
+@inject IWorkGroupsService workGroupService;
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@attribute [Authorize(Roles = "Administrador")]
+
+
+<h3>Editar Usuarios</h3>
+
+<EditForm Model="@workGroups" OnValidSubmit="EditWorkGroupsData">
+    <DataAnnotationsValidator />
+    <div class="mb-3" style="display: none;">
+        <input type="hidden" id="WorkPlaceId" name="WorkPlaceId" value="@workGroups.GroupId" />
+    </div>
+    <div class="mb-3">
+        <label for="FirstName" class="form-label">Nombre del Grupo</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="workGroups.GroupName" />
+        </div>
+        <ValidationMessage For="@(() => workGroups.GroupName)" />
+    </div>
+    <div class="mb-3">
+        <label for="LastName" class="form-label">Descripción de Grupo</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="workGroups.GroupDescription" />
+        </div>
+        <ValidationMessage For="@(() => workGroups.GroupDescription)" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+<p>@errorMessage</p>
+
+
+@code {
+    WorkGroupsDTO workGroups = new WorkGroupsDTO();
+    private string errorMessage;
+    [Parameter]
+    public int GroupId { get; set; }
+
+
+    [Inject]
+    private NavigationManager Navigation { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        workGroups = await workGroupService.FindWorkGroups(GroupId);
+    }
+
+
+    private async Task EditWorkGroupsData()
+    {
+
+        var respData = await workGroupService.UpdateWorkGroups(workGroups);
+        if (respData != 1)
+        {
+            errorMessage = "Error al modificar el espacio de trabajo";
+        }
+        else
+        {
+            Navigation.NavigateTo("/WorkGroups", true);
+        }
+    }
+
+    protected async Task Cancel()
+    {
+        Navigation.NavigateTo("/WorkGroups", true);
+    }
+}

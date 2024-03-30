@@ -1,0 +1,89 @@
+﻿@page "/WorkPlaces"
+
+@inject SweetAlertService Swal;
+@inject IWorkPlacesService workPlacesService;
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@attribute [Authorize(Roles = "Administrador")]
+
+
+<h3>Listado de Espacio de Trabajo</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="/AddWorkPlaces">Nuevo Espacio de Trabajo</a>
+<p>@errorMessage</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Codigo del Espacio de Trabajo</th>
+            <th>Nombre del Espacio de Trabajo</th>
+            <th>Numero del Espacio de Trabajo</th>
+            <th>Opciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (listadoWorkPlaces == null)
+        {
+            <tr>
+                <td colspan="4">NO hay datos para mostrar</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in listadoWorkPlaces)
+            {
+                <tr>
+                    <td>@item.WorkPlaceCode</td>
+                    <td>@item.WorkPlaceName</td>
+                    <td>@item.WorkPlaceNumber</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="/EditWorkPlaces/@item.WorkPlaceId">
+                            <i class="ti ti-pencil">Editar</i>
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        <button class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.WorkPlaceId))">
+                            <i class="ti ti-trash">Eliminar</i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    List<WorkPlacesDTO>? listadoWorkPlaces = null;
+    private string errorMessage;
+    
+    [Inject]
+    private NavigationManager Navigation { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        listadoWorkPlaces = await workPlacesService.GetWorkPlaces();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Espacio de Trabajo",
+                Text = "¿Deseas eliminar el Espacio de Trabajo?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            var delete = await workPlacesService.DeleteWorkPlaces(id);
+            if (!delete)
+            {
+                errorMessage = "Error al almacenar el Espacio de Trabajo";
+            }
+            else
+            {
+                Navigation.NavigateTo("/WorkPlaces", true);
+            }
+        }
+    }
+}

@@ -1,0 +1,9 @@
+﻿<div class="loading-overlay" style="@(_showLoading ? "" : "display:none;")">
+    <div class="loading-spinner"></div>
+    <div class="loading-message">Cargando...</div>
+</div>
+
+@code
+{
+    public bool _showLoading { get; set; }
+}

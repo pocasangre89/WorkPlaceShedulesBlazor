@@ -1,0 +1,120 @@
+﻿@page "/Calendar"
+
+@inject SweetAlertService Swal;
+@inject IUsersService UsersService;
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@using System.Globalization
+@attribute [Authorize(Roles = "Administrador")]
+
+
+<h3>Calendario de Asistencias al Trabajo</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="/Adduser">Nueva Asignaci&oacute;n</a>
+@* <p>@errorMessage</p>
+ *@
+<div>
+    <button @onclick="GoToPreviousMonth">Anterior</button>
+    <span>@CurrentMonth</span>
+    <button @onclick="GoToNextMonth">Siguiente</button>
+</div>
+
+<table class="table" style="width: 100%">
+    <thead>
+        <tr>
+            @foreach (var day in DaysOfWeek)
+            {
+                <th>@day</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var week in CalendarWeeks)
+        {
+            <tr>
+                @foreach (var day in week)
+                {
+                    <td @onclick="() => SelectDate(day)">
+                        @day.Day
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private DateTime CurrentDate = DateTime.Today;
+    private CultureInfo culture = CultureInfo.CurrentCulture;
+
+    private List<string> DaysOfWeek;
+    private List<List<DateTime>> CalendarWeeks;
+    private string CurrentMonth;
+
+    protected override void OnInitialized()
+    {
+        UpdateCalendar();
+    }
+
+    private void UpdateCalendar()
+    {
+        DaysOfWeek = culture.DateTimeFormat.AbbreviatedDayNames.ToList();
+        CalendarWeeks = GetCalendarWeeks(CurrentDate.Year, CurrentDate.Month);
+        CurrentMonth = culture.DateTimeFormat.MonthNames[CurrentDate.Month - 1] + " " + CurrentDate.Year.ToString();
+    }
+
+    private List<List<DateTime>> GetCalendarWeeks(int year, int month)
+    {
+        List<List<DateTime>> weeks = new List<List<DateTime>>();
+        DateTime firstDayOfMonth = new DateTime(year, month, 1);
+        DateTime lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+        // Encontrar el primer día de la semana
+        while (firstDayOfMonth.DayOfWeek != DayOfWeek.Monday)
+        {
+            firstDayOfMonth = firstDayOfMonth.AddDays(-1);
+        }
+
+        DateTime currentDate = firstDayOfMonth;
+        List<DateTime> week = new List<DateTime>();
+
+        while (currentDate <= lastDayOfMonth)
+        {
+            week.Add(currentDate);
+
+            if (currentDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                weeks.Add(week);
+                week = new List<DateTime>();
+            }
+
+            currentDate = currentDate.AddDays(1);
+        }
+
+        if (week.Any())
+        {
+            weeks.Add(week);
+        }
+
+        return weeks;
+    }
+
+    private void GoToPreviousMonth()
+    {
+        CurrentDate = CurrentDate.AddMonths(-1);
+        UpdateCalendar();
+    }
+
+    private void GoToNextMonth()
+    {
+        CurrentDate = CurrentDate.AddMonths(1);
+        UpdateCalendar();
+    }
+
+    private void SelectDate(DateTime date)
+    {
+        // Aquí puedes manejar la selección de la fecha
+        Console.WriteLine("Fecha seleccionada: " + date.ToShortDateString());
+    }
+}

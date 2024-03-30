@@ -1,0 +1,91 @@
+﻿@page "/Users"
+
+@inject SweetAlertService Swal;
+@inject IUsersService UsersService;
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@attribute [Authorize(Roles = "Administrador")]
+
+
+<h3>Listado de Usuarios</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="/Adduser">Nuevo Usuario</a>
+<p>@errorMessage</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Codigo del Usuario</th>
+            <th>Nombre del Usuario</th>
+            <th>Correo del Usuario</th>
+            <th>¿Es Administrador?</th>
+            <th>Opciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (listaUsuarios == null)
+        {
+            <tr>
+                <td colspan="4">NO hay datos para mostrar</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in listaUsuarios)
+            {
+                <tr>
+                    <td>@item.UserCode</td>
+                    <td>@item.FullName</td>
+                    <td>@item.Email</td>
+                    <td>@(item.IsAdmin ? "SI" : "NO")</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="/EditUser/@item.UserId">
+                            <i class="ti ti-pencil">Editar</i>
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        <button class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.UserId))">
+                            <i class="ti ti-trash">Eliminar</i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    List<UsersDTO>? listaUsuarios = null;
+    private string errorMessage;
+
+    [Inject]
+    private NavigationManager Navigation { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        listaUsuarios = await UsersService.GetUsers();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Usuario",
+                Text = "¿Deseas eliminar el Usuario?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            var delete = await UsersService.DeleteUsers(id);
+            if (!delete)
+            {
+                errorMessage = "Error al almacenar el usuario";
+            }
+            else
+            {
+                Navigation.NavigateTo("/Users", true);
+            }
+        }
+    }
+}

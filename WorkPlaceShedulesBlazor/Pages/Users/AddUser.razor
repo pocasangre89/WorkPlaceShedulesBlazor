@@ -1,0 +1,109 @@
+﻿@page "/AddUser"
+
+@inject SweetAlertService Swal;
+@inject IUsersService UsersService;
+@inject IWorkGroupsService workGroupService;
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@attribute [Authorize(Roles = "Administrador")]
+
+
+<h3>Agregar Usuarios</h3>
+
+<EditForm Model="@users" OnValidSubmit="SaveUser">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="FirstName" class="form-label">Codigo del Usuario</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="users.UserCode" />
+        </div>
+        <ValidationMessage For="@(() => users.UserCode)" />
+    </div>
+    <div class="mb-3">
+        <label for="LastName" class="form-label">Nombre del Usuario</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="users.FullName" />
+        </div>
+        <ValidationMessage For="@(() => users.FullName)" />
+    </div>
+    <div class="mb-3">
+        <label for="EmailAddress" class="form-label">Correo del Usuario</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="users.Email" />
+        </div>
+        <ValidationMessage For="@(() => users.Email)" />
+    </div>
+    <div class="mb-3">
+        <label for="IsAdmin" class="form-label">¿Es Admin?</label>
+        <InputSelect class="form-control" @bind-Value="@users.IsAdmin" DisplayName="IsAdmin">
+            <option value="true">SI</option>
+            <option value="false">NO</option>
+        </InputSelect>
+    @* <ValidationMessage For="@(() => users.IsAdmin.ToString()" /> *@
+    </div>
+    <div class="mb-3">
+        <label for="RolId" class="form-label">Rol del Usuario</label>
+        <InputSelect class="form-control" @bind-Value="@users.RoleId" DisplayName="RoleId">
+            <option value="">Seleccione un Rol</option>
+            <option value="1">Administrador</option>
+            <option value="2">Jefatura</option>
+            <option value="3">Desarrollo</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => users.RoleId)" />
+    </div>
+    <div class="mb-3">
+        <label for="GroupId" class="form-label">Grupo del Usuario</label>
+        <InputSelect class="form-control" @bind-Value="@users.GroupId" DisplayName="GroupId">
+            <option value="">Seleccione un Grupo</option>
+            @if (workGroups != null)
+            {
+                @foreach (var item in workGroups)
+                {
+                    <option value="@item.GroupId">@item.GroupName</option>
+                }
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => users.RoleId)" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+<p>@errorMessage</p>
+
+
+
+
+@code {
+    UsersDTO users = new UsersDTO();
+    List<WorkGroupsDTO>? workGroups = null;
+    private string errorMessage;
+
+    [Inject]
+    private NavigationManager Navigation { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        workGroups = await workGroupService.GetWorkGroups();
+    }
+
+    private async Task SaveUser()
+    {
+        var aa = await UsersService.SaveUsers(users);
+        if (aa != 1)
+        {
+            errorMessage = "Error al almacenar el usuario";
+        }
+        else
+        {
+            Navigation.NavigateTo("/Users");
+        }
+    }
+
+    protected async Task Cancel()
+    {
+        Navigation.NavigateTo("/Users", true);
+    }
+}

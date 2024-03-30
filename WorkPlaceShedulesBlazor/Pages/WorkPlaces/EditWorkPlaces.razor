@@ -1,0 +1,79 @@
+﻿@page "/EditWorkPlaces/{WorkPlaceId:int}"
+
+@inject SweetAlertService Swal;
+@inject IWorkPlacesService UsersService;
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@attribute [Authorize(Roles = "Administrador")]
+
+
+<h3>Editar Puesto de Trabajo</h3>
+
+<EditForm Model="@workPlaces" OnValidSubmit="EditWorkPlacesData">
+    <DataAnnotationsValidator />
+    <div class="mb-3" style="display: none;">
+        <input type="hidden" id="WorkPlaceId" name="WorkPlaceId" value="@workPlaces.WorkPlaceId" />
+    </div>
+    <div class="mb-3">
+        <label for="FirstName" class="form-label">Codigo del Espacio de Trabajo</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="workPlaces.WorkPlaceCode" />
+        </div>
+        <ValidationMessage For="@(() => workPlaces.WorkPlaceCode)" />
+    </div>
+    <div class="mb-3">
+        <label for="LastName" class="form-label">Nombre del Espacio de Trabajo</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="workPlaces.WorkPlaceName" />
+        </div>
+        <ValidationMessage For="@(() => workPlaces.WorkPlaceName)" />
+    </div>
+    <div class="mb-3">
+        <label for="EmailAddress" class="form-label">Numero del Espacio de Trabajo</label>
+        <div class="col-md-4">
+            <InputNumber class="form-control" @bind-Value="workPlaces.WorkPlaceNumber" />
+        </div>
+        <ValidationMessage For="@(() => workPlaces.WorkPlaceNumber)" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+<p>@errorMessage</p>
+
+@code {
+    WorkPlacesDTO workPlaces = new WorkPlacesDTO();
+    private string errorMessage;
+    [Parameter]
+    public int WorkPlaceId { get; set; }
+
+
+    [Inject]
+    private NavigationManager Navigation { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        workPlaces = await UsersService.FindWorkPlaces(WorkPlaceId);
+    }
+
+
+    private async Task EditWorkPlacesData()
+    {
+        var respData = await UsersService.UpdateWorkPlaces(workPlaces);
+        if (respData != 1)
+        {
+            errorMessage = "Error al modificar el espacio de trabajo";
+        }
+        else
+        {
+            Navigation.NavigateTo("/WorkPlaces", true);
+        }
+    }
+
+    protected async Task Cancel()
+    {
+        Navigation.NavigateTo("/WorkPlaces", true);
+    }
+}
