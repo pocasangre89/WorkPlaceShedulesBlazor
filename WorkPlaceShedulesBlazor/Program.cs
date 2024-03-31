@@ -18,6 +18,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https:/
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IWorkGroupsService, WorkGroupsService>();
 builder.Services.AddScoped<IWorkPlacesService, WorkPlacesService>();
+builder.Services.AddScoped<IUserWorkPlaceShedulesService, UserWorkPlaceShedulesService>();
 builder.Services.AddSweetAlert2();
 
 builder.Services.AddScoped<AuthService>();

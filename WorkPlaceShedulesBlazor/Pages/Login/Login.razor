@@ -11,9 +11,8 @@
 
 @using WorkPlaceShedulesBlazor.Service
 @using WorkPlaceShedulesBlazor.Storage
-<div class="row mt-5">
-
-    <div class="col-lg-4 offset-lg-4 border">
+<div class="d-flex align-items-center justify-content-center" style="min-height: 100vh;" >
+    <div class="text-center bg-default rounded-3 p-5 shadow-lg">
         <h3>Iniciar Sesión</h3>
         <EditForm Model="@loginModel" OnValidSubmit="@HandleSubmit">
             <DataAnnotationsValidator />
